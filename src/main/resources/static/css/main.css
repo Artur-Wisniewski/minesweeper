@@ -1,0 +1,137 @@
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+html,body {
+    height: 100%;
+    overflow: hidden;
+}
+body{
+    font-weight: 400;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+    line-height: 1.58;
+    color: #333;
+}
+button.default {
+    background-color: #e8e8e8;
+    color: #333;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.12);
+}
+
+button.primary {
+    background-color: #128ff2;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.12);
+    color: #fff;
+}
+input {
+    padding-left: 10px;
+    outline: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 1.7em;
+}
+
+a {
+    color: #128ff2;
+}
+button {
+    margin-right: 10px;
+    text-align: center;
+    box-shadow: none;
+    border: 1px solid transparent;
+    font-size: 14px;
+    outline: none;
+    line-height: 100%;
+    white-space: nowrap;
+    vertical-align: middle;
+    padding: 0.6rem 1rem;
+    border-radius: 2px;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    min-height: 38px;
+}
+
+button.default {
+    background-color: #e8e8e8;
+    color: #333;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.12);
+}
+
+button.primary {
+    background-color: #128ff2;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.12);
+    color: #fff;
+}
+
+button.accent {
+    background-color: #ff4743;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.12);
+    color: #fff;
+}
+
+#stage1{
+    padding-top: 150px;
+}
+.card {
+    min-height: 600px;
+    /* Add shadows to create the "card" effect */
+    box-shadow: 0 1px 11px 0 rgba(0,0,0,0.27);
+    transition: 0.3s;
+    background-color: aliceblue;
+
+
+    max-height: 600px;
+    position: relative;
+}
+.form-control{
+    width: 100%;
+    min-height: 38px;
+    font-size: 15px;
+    border: 1px solid
+    #c8c8c8;
+}
+.sendName {
+    text-align: center;
+    padding: 35px 55px 35px;
+    min-height: 250px;
+    border-radius: 2px;
+
+    /* Add shadows to create the "card" effect */
+    box-shadow: 0 1px 11px 0 rgba(0,0,0,0.27);
+    transition: 0.3s;
+    background-color: #ffffff;
+
+
+    max-height: 600px;
+    position: relative;
+}
+.hidden {
+    display: none;
+}
+/* On mouse-over, add a deeper shadow */
+
+
+/* Add some padding inside the card container */
+.container-fluid {
+    width: 80%;
+    padding-top: 3rem;
+    height: 100%;
+}
+.container {
+    height: 100%;
+    padding: 2px 16px;
+}
+body{
+    height: 100%;
+    background-color: #00b7ff;
+}
+
+
