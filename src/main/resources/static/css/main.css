@@ -43,7 +43,7 @@ a {
     color: #128ff2;
 }
 button {
-    margin-right: 10px;
+
     text-align: center;
     box-shadow: none;
     border: 1px solid transparent;
@@ -72,6 +72,9 @@ button.primary {
 }
 
 button.accent {
+    font-size: 18px;
+    min-height: 40px;
+    padding: 0.6rem 3rem;
     background-color: #ff4743;
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.12);
     color: #fff;
@@ -80,12 +83,13 @@ button.accent {
 #stage1{
     padding-top: 150px;
 }
-.card {
+.card-my {
+
     min-height: 600px;
     /* Add shadows to create the "card" effect */
     box-shadow: 0 1px 11px 0 rgba(0,0,0,0.27);
     transition: 0.3s;
-    background-color: aliceblue;
+    background-color: #FFF;
 
 
     max-height: 600px;
@@ -125,13 +129,69 @@ button.accent {
     padding-top: 3rem;
     height: 100%;
 }
-.container {
-    height: 100%;
+.container-chat  {
+
     padding: 2px 16px;
+}
+.chat-header {
+    text-align: center;
+    padding: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+#stage2 ul {
+    list-style-type: none;
+    background-color: #FFF;
+    margin: 0;
+    overflow: auto;
+    overflow-y: scroll;
+    padding: 0 20px 0px 20px;
+    padding-bottom: 10px;
+    height: 450px;
+}
+.chat-header h2 {
+    margin: 0;
+    font-weight: 500;
+}
+.form-group {
+    margin-bottom: 15px;
 }
 body{
     height: 100%;
     background-color: #00b7ff;
 }
-
+#messageForm .input-group input {
+    float: left;
+    width: calc(100% - 85px);
+}
+#card-my #messageForm {
+    padding: 20px;
+}
+.input-group{
+    padding-top: 10px;
+    position: relative;
+    display: flex;
+    border-collapse: separate;
+}
+#messageForm .input-group input {
+    float: left;
+    width: calc(100% - 85px);
+}
+.form-control {
+    width: 100%;
+    min-height: 38px;
+    font-size: 15px;
+    border: 1px solid #c8c8c8;
+}
+#messageForm .input-group button {
+    float: left;
+    width: 80px;
+    height: 38px;
+    margin-left: 5px;
+}
+#messageForm .input-group button {
+    float: left;
+    width: 80px;
+    height: 38px;
+    margin-left: 5px;
+}
 

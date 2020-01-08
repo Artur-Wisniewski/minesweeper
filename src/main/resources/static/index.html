@@ -42,21 +42,34 @@
 <div class="container-fluid">
     <div class="row ">
         <div class="col-sm-8 ">
-            <div class="card ">
+            <div class="card-my ">
 
-                <div class="container ">
-                    <h4><b>Gra własciwa</b></h4>
-                    <p>Architect & Engineer</p>
+                <div class="container-chat  ">
+                    <div class="chat-header">
+                        <h2> SAPER 2! </h2>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="col-sm-4">
-            <div class="card">
+            <div class="card-my">
+                <div class="container-chat ">
+                    <div class="chat-header">
+                        <h2>Room [<span id="room-id-display"></span>]</h2>
+                    </div>
+                    <ul id="messageArea">
 
-                <div class="container">
-                    <h4><b>Chat</b></h4>
-                    <p>Architect & Engineer</p>
+                    </ul>
+                    <form id="messageForm" name="messageForm" nameForm="messageForm">
+                        <div class="form-group">
+                            <div class="input-group clearfix">
+                                <input type="text" id="message" placeholder="Type a message... or /join [room-id] to join another room."
+                                       autocomplete="off" class="form-control"/>
+                                <button type="submit" class="primary inline">Send</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
