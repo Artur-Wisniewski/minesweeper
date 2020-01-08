@@ -53,7 +53,7 @@ button {
     white-space: nowrap;
     vertical-align: middle;
     padding: 0.6rem 1rem;
-    border-radius: 2px;
+    border-radius: 1px;
     transition: all 0.2s ease-in-out;
     cursor: pointer;
     min-height: 38px;
