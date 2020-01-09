@@ -93,9 +93,8 @@ function sendMessage() {
     if (messageContent.startsWith('/join ')) {
         var newRoomId = messageContent.substring('/join '.length);
         enterRoom(newRoomId);
-        while ($('#messageArea:first-child')) {
-            $('#messageArea').remove($('#messageArea:first-child'));
-        }
+        $('#messageArea').empty();
+
     } else if (messageContent && stompClient) {
         var chatMessage = {
             sender: username,
