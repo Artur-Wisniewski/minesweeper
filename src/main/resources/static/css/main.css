@@ -144,7 +144,7 @@ button.accent {
     margin: 0;
     overflow: auto;
     overflow-y: scroll;
-    padding: 0 20px 0px 20px;
+    padding: 0 20px 0px 0px;
     padding-bottom: 10px;
     height: 450px;
 }
@@ -194,4 +194,59 @@ body{
     height: 38px;
     margin-left: 5px;
 }
-
+#stage2 .chat-message i {
+    position: absolute;
+    width: 42px;
+    height: 42px;
+    overflow: hidden;
+    left: 10px;
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 18px;
+    line-height: 42px;
+    color: #fff;
+    text-align: center;
+    border-radius: 50%;
+    font-style: normal;
+    text-transform: uppercase;
+}
+#stage2 .event-message p {
+    color: #777;
+    font-size: 14px;
+    word-wrap: break-word;
+}
+#stage2 .chat-message p {
+    color: #43464b;
+}
+#stage2 ul li {
+    margin: 0;
+}
+#stage2 ul li {
+    line-height: 1.5rem;
+    padding: 10px 20px;
+    margin: 0;
+    border-bottom: 1px solid #f4f4f4;
+}
+#stage2 .chat-message span {
+    color: #333;
+    font-weight: 600;
+}
+#stage2 .event-message {
+    width: 100%;
+    text-align: center;
+    clear: both;
+}
+p {
+    margin: 10px 0 0px;
+    margin-top: 10px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    margin-left: 0px;
+}
+#stage2 .chat-message p {
+    color: #43464b;
+}
+#stage2 .chat-message {
+    padding-left: 68px;
+    position: relative;
+}

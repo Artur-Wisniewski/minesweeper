@@ -60,6 +60,9 @@
                     <div class="chat-header">
                         <h2>Room [<span id="room-id-display"></span>]</h2>
                     </div>
+                    <div class="connecting">
+                        Connecting...
+                    </div>
                     <ul id="messageArea">
 
                     </ul>
@@ -68,7 +71,7 @@
                             <div class="input-group clearfix">
                                 <input type="text" id="message" placeholder="Type a message... or /join [room-id] to join another room."
                                        autocomplete="off" class="form-control"/>
-                                <button type="submit" class="primary inline">Send</button>
+                                <button type="submit" id="send" class="primary inline">Send</button>
                             </div>
                         </div>
                     </form>
