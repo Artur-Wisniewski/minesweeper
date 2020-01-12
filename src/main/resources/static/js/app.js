@@ -219,7 +219,7 @@ function onGameMessageReceived(payload) {
         saper = false;
     }
     if(gameMessage.state == 'DEPLOYING'){
-
+        showNotification(gameMessage.bomber + ": is DEPLOYING!")
         currentState = States.DEPLOYING;
         $("#COMMIT").attr("class","primary inline");
         if(myRole != Roles.BOMBER)
@@ -227,7 +227,7 @@ function onGameMessageReceived(payload) {
         else
             addListeners();
     }if(gameMessage.state == 'DEFUSING'){
-
+        showNotification(gameMessage.saper + ": is DEFUSING!")
         currentState = States.DEFUSING;
         if(myRole == Roles.SAPER)
             addListeners();
@@ -235,7 +235,8 @@ function onGameMessageReceived(payload) {
             clearFields();
             removeListeners();
         }
-        $("#licznikFlag").text(gameMessage.fields.length);
+        boombsCounter = gameMessage.board.fields.length;
+        $("#licznikFlag").text(boombsCounter);
 
     }
 }
