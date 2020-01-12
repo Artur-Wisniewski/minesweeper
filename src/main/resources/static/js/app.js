@@ -1,9 +1,72 @@
 var stompClient = null;
 var currentSubscription;
+var gameSubscription;
 var username = null;
 var roomId = null;
 var topic = null;
+var gameTopic = null;
+var saper = true;
+var bomber = true;
 
+var States = {
+    WAITING: 1,
+    DEPLOYING: 2,
+    DEFUSING: 3,
+};
+var currentState = States.WAITING;
+//game
+var ikonaFlagi = '<i class="fa fa-flag" aria-hidden="true"></i>';
+var ikonaZnakuZapytania = '<i class="fa fa-question" aria-hidden="true"></i>';
+var ikonaBomby = '<i class="fa fa-bomb" aria-hidden="true"></i>';
+var obojetnaTwarz = '<i class="fa fa-meh-o" aria-hidden="true"></i>';
+var szczesliwaTwarz = '<i class="fa fa-smile-o" aria-hidden="true"></i>';
+var smutnaTwarz = '<i class="fa fa-frown-o" aria-hidden="true"></i>';
+var boardSize = 18;
+var boombsCounter = 0;
+
+function initBoard(){
+
+    $("#buzka").html(obojetnaTwarz);
+    $("#licznikFlag").html(boombsCounter);
+    $("#czasomierz").html(0);
+    var zawartoscDiva="";
+    for(var i = 0; i < boardSize * (boardSize-2); i++){
+        zawartoscDiva = '<div id=element' + i + ' class="kafelek zasloniety kursor" style="width: 25px; height: 25px;" ></div>';
+
+        if((i + 1) % boardSize == 0){
+            zawartoscDiva += '<div style="clear:both;"></div>'
+        }
+        //console.log(zawartoscDiva);
+        $("#plansza").append(zawartoscDiva);
+    }
+    addListeners();
+}
+function addListeners(){
+
+    for (var i = 0; i < boardSize * (boardSize-2); i++) {
+
+
+        var element = document.getElementById("element" + i);
+        element.addEventListener('click', function (event){
+            console.log("lewe klikniecie " + event.target.id);
+            addBomb(event.target.id);
+            event.preventDefault();
+        }, false);
+        element.addEventListener('contextmenu', function (event){
+            console.log("prawe klikniecie " + event.target.id);
+            event.preventDefault();
+            clearField(event.target.id);
+        }, false);
+    }
+}
+function addBomb(id){
+    var element = document.getElementById(id);
+    element.innerHTML = ikonaFlagi;
+}
+function clearField(id){
+    var element = document.getElementById(id);
+    element.innerHTML = "";
+}
 
 msgInput = $('#message');
 var colors = [
@@ -38,21 +101,55 @@ function onError(error) {
     $(".connecting").text('Could not connect to WebSocket server. Please refresh this page to try again!');
 }
 function enterRoom(newRoomId) {
+    initBoard();
     roomId = newRoomId;
     $("#room-id-display").text(roomId);
     topic = `/app/chat/${newRoomId}`;
-
-    if (currentSubscription) {
+    gameTopic = `/app/game/${newRoomId}`;
+    if (currentSubscription || gameSubscription) {
         currentSubscription.unsubscribe();
+        gameSubscription.unsubscribe();
     }
     currentSubscription = stompClient.subscribe(`/channel/${roomId}`, onMessageReceived);
+    gameSubscription = stompClient.subscribe(`/game/${roomId}`, onGameMessageReceived);
 
-    stompClient.send(`${topic}/addUser`,
-        {},
-        JSON.stringify({sender: username, type: 'JOIN'})
-    );
+    stompClient.send(`${topic}/addUser`, {}, JSON.stringify({sender: username, type: 'JOIN'}));
+    stompClient.send(`${gameTopic}/joinToTheGame`, {}, JSON.stringify({sender: username, type: 'JOIN'}));
 }
 //do poprawienia wszyyyystko
+function sendBOMBERRole() {
+    sendRole("BOMBER");
+}
+function sendSAPERRole() {
+    sendRole("SAPER");
+}
+function sendRole(roleToSend) {
+    if (roleToSend && stompClient) {
+        var RoleMessage = {
+            sender: username,
+            role: roleToSend,
+        };
+        stompClient.send(`${gameTopic}/sendRole`, {}, JSON.stringify(RoleMessage));
+    }
+}
+function onGameMessageReceived(payload) {
+    var gameMessage = JSON.parse(payload.body);
+    console.log(gameMessage);
+    if(gameMessage.bomber && bomber){
+        showNotification(gameMessage.bomber + ": is BOMBER!")
+        bomber = false;
+        $( "#BOMBER" ).hide();
+    }
+    if(gameMessage.saper && saper){
+        showNotification(gameMessage.saper + ": is SAPER!")
+        $( "#SAPER" ).hide();
+        saper = false;
+    }
+    if(gameMessage.state == 'DEPLOYING'){
+        currentState = States.DEPLOYING;
+        $("#role").append("<button type=\"submit\" id=\"COMMIT\" class=\"primary inline\">COMMIT</button> ");
+    }
+}
 function onMessageReceived(payload) {
     var message = JSON.parse(payload.body);
 
@@ -88,6 +185,16 @@ function onMessageReceived(payload) {
     $('#messageArea').append(messageElement);
     $('#messageArea').scrollTop($('#messageArea').prop('scrollHeight'));
 }
+function showNotification(notification){
+    var messageElement = document.createElement('li');
+    messageElement.classList.add('event-message');
+    var textElement = document.createElement('p');
+    var messageText = document.createTextNode(notification);
+    textElement.appendChild(messageText);
+    messageElement.appendChild(textElement);
+    $('#messageArea').append(messageElement);
+    $('#messageArea').scrollTop($('#messageArea').prop('scrollHeight'));
+}
 function sendMessage() {
     var messageContent = $('#message').val().trim();
     if (messageContent.startsWith('/join ')) {
@@ -119,5 +226,7 @@ $(function () {
     });
     $( "#join" ).click(function() { connect(); });
     $("#send").click(function () {  sendMessage()});
+    $( "#BOMBER" ).click(function() { sendBOMBERRole(); });
+    $("#SAPER").click(function () {  sendSAPERRole()});
 
 });

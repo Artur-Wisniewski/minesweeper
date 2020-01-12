@@ -25,6 +25,12 @@ button.primary {
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.12);
     color: #fff;
 }
+button:disabled{
+    -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
+    filter: grayscale(100%);
+    opacity: 0.25;
+    pointer-events: none;
+}
 input {
     padding-left: 10px;
     outline: none;
@@ -79,20 +85,81 @@ button.accent {
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.12);
     color: #fff;
 }
+.pojemnik{
+    margin: 20px auto 0 auto;
+    height: 450px;
+    width: 450px;
 
+}
+.naglowek{
+    position: relative;
+    height: 50px;
+    padding: 10px;
+    color: yellow;
+    font-size: 25px;
+    text-align: center;
+    background-color: #CDD0D1;
+    -webkit-box-shadow: inset 2px 2px 2px 0px rgba(255,255,255,0.84), inset -2px -2px 2px 0px rgba(0,0,0,0.84);
+    -moz-box-shadow: inset 2px 2px 2px 0px rgba(255,255,255,0.84), inset -2px -2px 2px 0px rgba(0,0,0,0.84);
+    box-shadow: inset 2px 2px 2px 0px rgba(255,255,255,0.84), inset -2px -2px 2px 0px rgba(0,0,0,0.84);
+}
+#licznikFlag{
+    float: left;
+    height: 30px;
+    width: 40px;
+    background-color: #222222;
+    font-size: 20px;
+    display: table
+}
+.zasloniety{
+    -webkit-box-shadow: inset 2px 2px 2px 0px rgba(255,255,255,0.84), inset -2px -2px 2px 0px rgba(0,0,0,0.84);
+    -moz-box-shadow: inset 2px 2px 2px 0px rgba(255,255,255,0.84), inset -2px -2px 2px 0px rgba(0,0,0,0.84);
+    box-shadow: inset 2px 2px 2px 0px rgba(255,255,255,0.84), inset -2px -2px 2px 0px rgba(0,0,0,0.84);
+}
+.kafelek{
+    float: left;
+    background-color: #CDD0D1;
+    display: flex;
+    justify-content: center; /* align horizontal */
+    align-items: center; /* align vertical */
+}
+.kursor{
+    cursor: pointer;
+}
+#buzka{
+    position: absolute;
+    left: 48%;
+    height: 20px;
+    width: 40px;
+    font-size: 20px;
+    text-align: center;
+    background-color: #222222;
+    margin-bottom: 20px;
+    display: table
+}
+
+#czasomierz{
+    font-size: 20px;
+    text-align: center;
+    float: right;
+    height: 30px;
+    width: 40px;
+    background-color: #222222;
+    display: table;
+}
 #stage1{
     padding-top: 150px;
 }
 .card-my {
 
-    min-height: 600px;
+    min-height: 630px;
     /* Add shadows to create the "card" effect */
     box-shadow: 0 1px 11px 0 rgba(0,0,0,0.27);
     transition: 0.3s;
     background-color: #FFF;
 
 
-    max-height: 600px;
+    max-height: 630px;
     position: relative;
 }
 .form-control{
@@ -133,6 +200,10 @@ button.accent {
 
     padding: 2px 16px;
 }
+#role{
+    padding-top: 20px;
+    text-align: right;
+}
 .chat-header {
     text-align: center;
     padding: 15px;
@@ -146,7 +217,7 @@ button.accent {
     overflow-y: scroll;
     padding: 0 20px 0px 0px;
     padding-bottom: 10px;
-    height: 450px;
+    height: 480px;
 }
 .chat-header h2 {
     margin: 0;
