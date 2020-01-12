@@ -7,7 +7,6 @@ var topic = null;
 var gameTopic = null;
 var saper = true;
 var bomber = true;
-
 var States = {
     WAITING: 1,
     DEPLOYING: 2,
@@ -19,6 +18,7 @@ var Roles = {
     SAPER: 3,
 
 }
+var odkryto = {};
 var myRole = Roles.OBSERVER;
 var currentState = States.WAITING;
 //game
@@ -30,7 +30,13 @@ var szczesliwaTwarz = '<i class="fa fa-smile-o" aria-hidden="true"></i>';
 var smutnaTwarz = '<i class="fa fa-frown-o" aria-hidden="true"></i>';
 var boardSize = 18;
 var boombsCounter = 0;
+var flagCounter = 0;
 var boardBombs = [];
+var iloscOdkrytychPol = 0;
+
+var board = [];
+
+
 function initBoard(){
 
     $("#buzka").html(obojetnaTwarz);
@@ -58,6 +64,12 @@ function addListeners(){
         element.addEventListener('contextmenu', bomberContextMenuType);
     }
 }
+//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER
+function unieruchomKafelek(i){
+    var element = document.getElementById("element" + i);
+    element.removeEventListener("click",saperClickType);
+    element.removeEventListener("contextmenu", saperContextMenuType);
+}
 function addSaperListeners(){
 
     for (var i = 0; i < boardSize * (boardSize-2); i++) {
@@ -65,7 +77,151 @@ function addSaperListeners(){
         element.addEventListener('click', saperClickType);
         element.addEventListener('contextmenu', saperContextMenuType);
     }
+}function saperContextMenuType(event) {
+    console.log("prawe klikniecie " + event.target.id);
+    event.preventDefault();
+    oflaguj(event.target.id);
 }
+
+function saperClickType(event) {
+    console.log("lewe klikniecie " + event.target.id);
+    let element = document.getElementById(event.target.id);
+    if(element.innerHTML !== ikonaFlagi && element.innerHTML !== ikonaZnakuZapytania){
+        var out = event.target.id.replace(/\'/g, '').split(/(\d+)/).filter(Boolean);
+        odkryj(out[1]);
+    }
+    event.preventDefault();
+}
+
+function odkryj(i){
+
+    /*if(!czasUplywa){
+        uruchomCzas();
+    }*/
+
+
+
+
+    var element = document.getElementById("element" + i);
+    element.classList.remove('kursor');
+
+    if(element.innerHTML === ikonaFlagi){
+        flagCounter --;
+        document.getElementById("licznikFlag").innerHTML = boombsCounter - flagCounter;
+    }
+
+    if(board[i] === "B"){
+        element.innerHTML = ikonaBomby;
+        element.classList.add('bomba');
+        element.classList.remove('zasloniety');
+        skucha();
+    }
+    else if(board[i] === 0 && !odkryto.hasOwnProperty(i)){
+        odkryto[i] = true;
+        element.innerHTML = "";
+        element.classList.add('odkryty');
+        element.classList.remove('zasloniety');
+
+        var y = Math.floor(i/18);
+        var x = i % 18;
+        if(x < boardSize && y < boardSize-2 && x >= 0 && y >= 0) {
+            if (x - 1 >= 0) {
+                odkryj(x - 1 + (y * 18));
+            }
+            if (x + 1 < boardSize) {
+                odkryj(x + 1 + (y * 18));
+            }
+            if (y + 1 < boardSize - 2) {
+                odkryj(x + ((y + 1) * 18));
+            }
+            if (y - 1 >= 0) {
+                odkryj(x + ((y - 1) * 18));
+            }
+            if (y + 1 < boardSize - 2 && x - 1 >= 0) {
+                odkryj(x - 1 + ((y + 1) * 18));
+            }
+            if (y - 1 >= 0 && x + 1 < boardSize) {
+                odkryj(x + 1 + ((y - 1) * 18));
+            }
+            if (y + 1 < boardSize - 2 && x + 1 < boardSize) {
+                odkryj(x + 1 + ((y + 1) * 18));
+            }
+            if (y - 1 >= 0 && x - 1 >= 0) {
+                odkryj(x - 1 + ((y - 1) * 18));
+            }
+        }
+        unieruchomKafelek(i);
+        iloscOdkrytychPol++;
+        czyWygrales();
+    }
+    else if(board[i] !== 0 && !odkryto.hasOwnProperty(i)){
+        odkryto[i] = true;
+        var number = board[i];
+        var color = ["#0000FD","#017E00","#FE0001","#010180","#7F0300","#008180","#000000","#808080"];
+        element.innerHTML = '<div style="color:'+color[board[i]]+ '">'+board[i]+'</div>';
+        element.classList.add('odkryty');
+        element.classList.remove('zasloniety');
+        unieruchomKafelek(i);
+        iloscOdkrytychPol++;
+        czyWygrales();
+    }
+}
+function skucha(){
+    for (var i = 0; i < boardSize * (boardSize-2); i++) {
+        if(board[i] === "B"){
+            var element = document.getElementById("element" + i);
+            element.innerHTML = ikonaBomby;
+            element.classList.remove('zasloniety');
+            showNotification("NIESTETY GRACZ PRZEGRAL :(");
+        }
+    }
+    unieruchomPlansze();
+    document.getElementById("buzka").innerHTML = smutnaTwarz;
+}
+function oflaguj(i){
+
+    /*if(!czasUplywa){
+        uruchomCzas();
+    }*/
+
+    var element = document.getElementById(i);
+
+    if(element.innerHTML === ""){
+        element.innerHTML = ikonaFlagi;
+        flagCounter++;
+    }
+
+    else if(element.innerHTML === ikonaFlagi){
+        element.innerHTML = ikonaZnakuZapytania;
+        flagCounter--;
+    }
+
+    else{
+        element.innerHTML = "";
+    }
+
+    document.getElementById("licznikFlag").innerHTML = boombsCounter - flagCounter;
+    czyWygrales();
+}
+function czyWygrales(){
+    if(iloscOdkrytychPol + boombsCounter === board.length && flagCounter === boombsCounter ){
+        unieruchomPlansze();
+        document.getElementById("buzka").innerHTML = szczesliwaTwarz;
+        showNotification("BRAWO SAPER WYGRAL!");
+    }
+
+}
+function unieruchomPlansze(){
+    for (var i = 0; i < boardSize * (boardSize-2); i++) {
+        if(!odkryto.hasOwnProperty(i)){
+            //usuwa wszystkie listenersy dla elementu
+            unieruchomKafelek(i);
+        }
+    }
+    //clearInterval(czasomierz);
+}
+//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER//SAPER
+//bomber//bomber//bomber//bomber//bomber//bomber//bomber//bomber//bomber//bomber//bomber//bomber//bomber
 function bomberContextMenuType(event) {
     console.log("prawe klikniecie " + event.target.id);
     event.preventDefault();
@@ -230,16 +386,64 @@ function onGameMessageReceived(payload) {
         showNotification(gameMessage.saper + ": is DEFUSING!")
         currentState = States.DEFUSING;
         if(myRole == Roles.SAPER)
-            addListeners();
+            addSaperListeners();
         else if(myRole == Roles.BOMBER){
             clearFields();
             removeListeners();
         }
         boombsCounter = gameMessage.board.fields.length;
         $("#licznikFlag").text(boombsCounter);
+        setBoard(gameMessage.board.fields)
 
     }
 }
+
+function setBoard(bombsMap){
+    for(let i = 0; i < boardSize * (boardSize-2); i++){
+       board.push(0);
+    }
+    for(let i = 0; i < bombsMap.length; i++){
+        var y = Math.floor(bombsMap[i]/18);
+        var x = bombsMap[i] % 18;
+        board[bombsMap[i]] = "B";
+
+        if(x < boardSize && y < boardSize-2 && x >= 0 && y >= 0){
+            if(x-1 >=0){
+                if(board[x-1 + (y * 18)] != "B")
+                    board[x-1 + (y * 18)]++;
+            }
+            if(x+1 < boardSize){
+                if(board[x+1+ (y * 18)] != "B")
+                    board[x+1+ (y * 18)] ++;
+            }
+            if(y+1 < boardSize-2){
+                if(board[x +((y+1) * 18)] != "B")
+                    board[x +((y+1) * 18)]++;
+            }
+            if(y-1 >=0){
+                if(board[x +((y-1) * 18)] != "B")
+                    board[x +((y-1) * 18)]++;
+            }
+            if(y+1 < boardSize-2 && x-1>=0){
+                if(board[x-1+((y+1) * 18)] != "B")
+                    board[x-1+((y+1) * 18)]++;
+            }
+            if(y-1 >=0 && x+1 < boardSize){
+                if(board[x+1+((y-1) * 18)] != "B")
+                    board[x+1+((y-1) * 18)]++;
+            }
+            if(y+1 < boardSize-2 && x+1 < boardSize){
+                if(board[x+1+((y+1) * 18)] != "B")
+                    board[x+1+((y+1) * 18)]++;
+            }
+            if(y-1 >=0 && x-1>=0){
+                if(board[x-1+((y-1) * 18)] != "B")
+                    board[x-1+((y-1) * 18)]++;
+            }
+        }
+    }
+}
+
 
 function onMessageReceived(payload) {
     var message = JSON.parse(payload.body);

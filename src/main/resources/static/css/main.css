@@ -8,7 +8,7 @@ html,body {
     overflow: hidden;
 }
 body{
-    
+
     font-weight: 400;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 
@@ -79,7 +79,14 @@ button.primary {
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.12);
     color: #fff;
 }
-
+.odkryty{
+    background-color: #C0C0C0;
+    color: #0000FD;
+    border: solid 1px #808080;
+}
+.bomba{
+    background-color: red;
+}
 button.accent {
     font-size: 18px;
     min-height: 40px;
