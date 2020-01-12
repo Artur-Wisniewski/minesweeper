@@ -9,6 +9,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
+import saper.model.Board;
 import saper.model.ChatMessage;
 import saper.model.GameState;
 import saper.model.RoleMessage;
@@ -24,12 +25,7 @@ public class GameController {
     @Autowired
     private SimpMessageSendingOperations messagingTemplate;
 
-    /*@MessageMapping("/game/{roomId}/sendMove")
-    public void sendMove(@DestinationVariable String roomId, @Payload ChatMessage chatMessage) {
 
-
-        messagingTemplate.convertAndSend(format("/game/%s", roomId), chatMessage);
-    }*/
     @MessageMapping("/game/{roomId}/sendRole")
     public void sendRole(@DestinationVariable String roomId, @Payload RoleMessage roleMessage) {
 
@@ -56,6 +52,15 @@ public class GameController {
             System.out.println(GamesState.get(roomId).getBomber());
         }
         GameState gameState = GamesState.get(roomId);
+        messagingTemplate.convertAndSend(format("/game/%s", roomId), gameState);
+    }
+    @MessageMapping("/game/{roomId}/sendBoard")
+    public void sendBoard(@DestinationVariable String roomId, @Payload Board board) {
+
+        GameState gameState = GamesState.get(roomId);
+
+        gameState.setBoard(board);
+        gameState.setState(GameState.State.DEFUSING);
         messagingTemplate.convertAndSend(format("/game/%s", roomId), gameState);
     }
 

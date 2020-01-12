@@ -13,6 +13,13 @@ var States = {
     DEPLOYING: 2,
     DEFUSING: 3,
 };
+var Roles = {
+    OBSERVER : 1,
+    BOMBER: 2,
+    SAPER: 3,
+
+}
+var myRole = Roles.OBSERVER;
 var currentState = States.WAITING;
 //game
 var ikonaFlagi = '<i class="fa fa-flag" aria-hidden="true"></i>';
@@ -23,7 +30,7 @@ var szczesliwaTwarz = '<i class="fa fa-smile-o" aria-hidden="true"></i>';
 var smutnaTwarz = '<i class="fa fa-frown-o" aria-hidden="true"></i>';
 var boardSize = 18;
 var boombsCounter = 0;
-
+var boardBombs = [];
 function initBoard(){
 
     $("#buzka").html(obojetnaTwarz);
@@ -39,7 +46,7 @@ function initBoard(){
         //console.log(zawartoscDiva);
         $("#plansza").append(zawartoscDiva);
     }
-    addListeners();
+
 }
 function addListeners(){
 
@@ -47,25 +54,65 @@ function addListeners(){
 
 
         var element = document.getElementById("element" + i);
-        element.addEventListener('click', function (event){
-            console.log("lewe klikniecie " + event.target.id);
-            addBomb(event.target.id);
-            event.preventDefault();
-        }, false);
-        element.addEventListener('contextmenu', function (event){
-            console.log("prawe klikniecie " + event.target.id);
-            event.preventDefault();
-            clearField(event.target.id);
-        }, false);
+        element.addEventListener('click', bomberClickType);
+        element.addEventListener('contextmenu', bomberContextMenuType);
+    }
+}
+function addSaperListeners(){
+
+    for (var i = 0; i < boardSize * (boardSize-2); i++) {
+        var element = document.getElementById("element" + i);
+        element.addEventListener('click', saperClickType);
+        element.addEventListener('contextmenu', saperContextMenuType);
+    }
+}
+function bomberContextMenuType(event) {
+    console.log("prawe klikniecie " + event.target.id);
+    event.preventDefault();
+    clearField(event.target.id);
+}
+function bomberClickType(event) {
+    console.log("lewe klikniecie " + event.target.id);
+    addBomb(event.target.id);
+    event.preventDefault();
+}
+function removeListeners() {
+    for (var i = 0; i < boardSize * (boardSize-2); i++) {
+        var element = document.getElementById("element" + i);
+        element.removeEventListener("click", bomberClickType);
+        element.removeEventListener("contextmenu", bomberContextMenuType);
+    }
+}
+function clearFields() {
+    for(let i = 0; i < boardBombs.length; i++){
+        var element = document.getElementById(boardBombs[i]);
+        element.innerHTML = "";
     }
 }
 function addBomb(id){
     var element = document.getElementById(id);
-    element.innerHTML = ikonaFlagi;
+    if(element.innerHTML==""){
+        boombsCounter++;
+        boardBombs.push(id);
+        element.innerHTML = ikonaBomby;
+        $("#licznikFlag").html(boombsCounter);
+    }
+
+
 }
 function clearField(id){
     var element = document.getElementById(id);
-    element.innerHTML = "";
+    if(element.innerHTML!=""){
+        boombsCounter--;
+        for(var i = 0; i < boardBombs.length;i++){
+            if(boardBombs[i] == id){
+                boardBombs.splice(i,1);
+                break;
+            }
+        }
+        element.innerHTML = "";
+        $("#licznikFlag").html(boombsCounter);
+    }
 }
 
 msgInput = $('#message');
@@ -119,9 +166,13 @@ function enterRoom(newRoomId) {
 //do poprawienia wszyyyystko
 function sendBOMBERRole() {
     sendRole("BOMBER");
+    $("#SAPER").prop("disabled",true);
+    myRole = Roles.BOMBER;
 }
 function sendSAPERRole() {
     sendRole("SAPER");
+    $("#BOMBER").prop("disabled",true);
+    myRole = Roles.SAPER;
 }
 function sendRole(roleToSend) {
     if (roleToSend && stompClient) {
@@ -132,24 +183,63 @@ function sendRole(roleToSend) {
         stompClient.send(`${gameTopic}/sendRole`, {}, JSON.stringify(RoleMessage));
     }
 }
+function sendBoard() {
+    var BoardMessage ={
+        fields: processText(boardBombs),
+    }
+    console.log(JSON.stringify(BoardMessage));
+    stompClient.send(`${gameTopic}/sendBoard`, {}, JSON.stringify(BoardMessage));
+}
+function processText(inputText) {
+    var output = [];
+    console.log(inputText);
+    var text = ["element1","element2","element3"];
+    console.log(text);
+    var i = 0;
+    var outputout =  [];
+    inputText.forEach(function (item) {
+        output.push(item.replace(/\'/g, '').split(/(\d+)/).filter(Boolean));
+        outputout.push(output[i][1]);
+        i++;
+    });
+    return outputout;
+}
 function onGameMessageReceived(payload) {
     var gameMessage = JSON.parse(payload.body);
     console.log(gameMessage);
     if(gameMessage.bomber && bomber){
-        showNotification(gameMessage.bomber + ": is BOMBER!")
+        showNotification(gameMessage.bomber + ": is THE BOMBER!")
         bomber = false;
+
         $( "#BOMBER" ).hide();
     }
     if(gameMessage.saper && saper){
-        showNotification(gameMessage.saper + ": is SAPER!")
+        showNotification(gameMessage.saper + ": is THE SAPER!")
         $( "#SAPER" ).hide();
         saper = false;
     }
     if(gameMessage.state == 'DEPLOYING'){
+
         currentState = States.DEPLOYING;
-        $("#role").append("<button type=\"submit\" id=\"COMMIT\" class=\"primary inline\">COMMIT</button> ");
+        $("#COMMIT").attr("class","primary inline");
+        if(myRole != Roles.BOMBER)
+            $("#COMMIT").prop("disabled",true);
+        else
+            addListeners();
+    }if(gameMessage.state == 'DEFUSING'){
+
+        currentState = States.DEFUSING;
+        if(myRole == Roles.SAPER)
+            addListeners();
+        else if(myRole == Roles.BOMBER){
+            clearFields();
+            removeListeners();
+        }
+        $("#licznikFlag").text(gameMessage.fields.length);
+
     }
 }
+
 function onMessageReceived(payload) {
     var message = JSON.parse(payload.body);
 
@@ -228,5 +318,5 @@ $(function () {
     $("#send").click(function () {  sendMessage()});
     $( "#BOMBER" ).click(function() { sendBOMBERRole(); });
     $("#SAPER").click(function () {  sendSAPERRole()});
-
+    $("#COMMIT").click(function () { sendBoard()});
 });
