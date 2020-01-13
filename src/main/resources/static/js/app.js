@@ -5,8 +5,12 @@ var username = null;
 var roomId = null;
 var topic = null;
 var gameTopic = null;
-var saper = true;
-var bomber = true;
+var ikonaFlagi = '<i class="fa fa-flag" aria-hidden="true"></i>';
+var ikonaZnakuZapytania = '<i class="fa fa-question" aria-hidden="true"></i>';
+var ikonaBomby = '<i class="fa fa-bomb" aria-hidden="true"></i>';
+var obojetnaTwarz = '<i class="fa fa-meh-o" aria-hidden="true"></i>';
+var szczesliwaTwarz = '<i class="fa fa-smile-o" aria-hidden="true"></i>';
+var smutnaTwarz = '<i class="fa fa-frown-o" aria-hidden="true"></i>';
 var States = {
     WAITING: 1,
     DEPLOYING: 2,
@@ -17,26 +21,81 @@ var Roles = {
     BOMBER: 2,
     SAPER: 3,
 
-}
+};
+//game
+var czasomierz;
+var sekundy = 0;
+var czasUplywa = false;
+var saper = true;
+var bomber = true;
+var iknowBro = true;
+var DeployingFirstTime = true;
+var defusing = true;
 var odkryto = {};
 var myRole = Roles.OBSERVER;
 var currentState = States.WAITING;
-//game
-var ikonaFlagi = '<i class="fa fa-flag" aria-hidden="true"></i>';
-var ikonaZnakuZapytania = '<i class="fa fa-question" aria-hidden="true"></i>';
-var ikonaBomby = '<i class="fa fa-bomb" aria-hidden="true"></i>';
-var obojetnaTwarz = '<i class="fa fa-meh-o" aria-hidden="true"></i>';
-var szczesliwaTwarz = '<i class="fa fa-smile-o" aria-hidden="true"></i>';
-var smutnaTwarz = '<i class="fa fa-frown-o" aria-hidden="true"></i>';
 var boardSize = 18;
 var boombsCounter = 0;
 var flagCounter = 0;
 var boardBombs = [];
 var iloscOdkrytychPol = 0;
-
 var board = [];
+var visibleBoard = [];
+function initRestart(){
+    //first restart server
+    let restart = {
+        restart:true
+    };
+    stompClient.send(`${gameTopic}/restart`, {}, JSON.stringify(restart));
+}
+function restart(){
+    //restart client
+    saper = true;
+    bomber = true;
+    iknowBro = true;
+    DeployingFirstTime = true;
+    defusing = true;
+    odkryto = {};
+    myRole = Roles.OBSERVER;
+    currentState = States.WAITING;
+    boombsCounter = 0;
+    flagCounter = 0;
+    boardBombs = [];
+    iloscOdkrytychPol = 0;
+    board = [];
+    visibleBoard = [];
+    czasUplywa = false;
+    sekundy = 0;
+    clearBoard();
+    initBoard();
+    $("#RESTART").hide();
+    $("#BOMBER").show();
+    $("#BOMBER").prop("disabled",false);
+    $("#SAPER").show();
+    $("#SAPER").prop("disabled",false);
+    $("#COMMIT").hide();
+}
+function czasieUplywaj(){
+    if(sekundy < 9999){
+        sekundy ++;
+        document.getElementById("czasomierz").innerHTML = sekundy;
+    }
+}
+function uruchomCzas(){
+    czasUplywa = true;
+    czasomierz = setInterval(czasieUplywaj, 1000);
+}
+function clearBoard() {
+    for(var i = 0; i < boardSize * (boardSize-2); i++){
+        let element = document.getElementById("element"+i);
+        if(element!=null)
+        element.remove();
 
+    }
+    let element = document.getElementById("plansza");
+    element.innerHTML = "";
 
+}
 function initBoard(){
 
     $("#buzka").html(obojetnaTwarz);
@@ -51,6 +110,7 @@ function initBoard(){
         }
         //console.log(zawartoscDiva);
         $("#plansza").append(zawartoscDiva);
+        visibleBoard[i] = 9;
     }
 
 }
@@ -89,10 +149,51 @@ function saperClickType(event) {
     if(element.innerHTML !== ikonaFlagi && element.innerHTML !== ikonaZnakuZapytania){
         var out = event.target.id.replace(/\'/g, '').split(/(\d+)/).filter(Boolean);
         odkryj(out[1]);
+        for(var i = 0; i < visibleBoard.length; i++){
+
+            if(odkryto.hasOwnProperty(i)){ // jesli nie null
+                if(board[i] != "B")
+                    visibleBoard[i] = board[i];
+                else
+                    visibleBoard[i] = 12;//to jest doslownie znak bomby
+
+            }else if (!odkryto.hasOwnProperty(i)){
+                var e = document.getElementById("element"+i);
+
+                if(e.innerHTML === "")//pusty zakryty tzw
+                    visibleBoard[i] = 9; //pusty
+                else if(e.innerHTML === ikonaZnakuZapytania)
+                     visibleBoard[i] = 11; // ikonaZnakuZapytania
+                else
+                    visibleBoard[i] = 10; // flaga
+            }
+
+        }
+        sendMove(visibleBoard);
     }
     event.preventDefault();
 }
-
+function sendFlagCounter(flag){
+    let flagCounter = {
+        flagCounter: flag,
+    };
+    console.log(JSON.stringify(flagCounter));
+    stompClient.send(`${gameTopic}/sendFlagCounter`, {}, JSON.stringify(flagCounter));
+}
+function sendLost(){
+    var lost = {
+        win: false
+    };
+    console.log(JSON.stringify(lost));
+    stompClient.send(`${gameTopic}/sendState`, {}, JSON.stringify(lost));
+}
+function sendWin(){
+    var win = {
+        win: true
+    };
+    console.log(JSON.stringify(flagCounter));
+    stompClient.send(`${gameTopic}/sendState`, {}, JSON.stringify(win));
+}
 function odkryj(i){
 
     /*if(!czasUplywa){
@@ -108,11 +209,14 @@ function odkryj(i){
     if(element.innerHTML === ikonaFlagi){
         flagCounter --;
         document.getElementById("licznikFlag").innerHTML = boombsCounter - flagCounter;
+        sendFlagCounter(boombsCounter - flagCounter);
+
     }
 
     if(board[i] === "B"){
+        odkryto[i] = true;
         element.innerHTML = ikonaBomby;
-        element.classList.add('bomba');
+        element.style.backgroundColor = "red";
         element.classList.remove('zasloniety');
         skucha();
     }
@@ -153,6 +257,7 @@ function odkryj(i){
         unieruchomKafelek(i);
         iloscOdkrytychPol++;
         czyWygrales();
+
     }
     else if(board[i] !== 0 && !odkryto.hasOwnProperty(i)){
         odkryto[i] = true;
@@ -169,14 +274,18 @@ function odkryj(i){
 function skucha(){
     for (var i = 0; i < boardSize * (boardSize-2); i++) {
         if(board[i] === "B"){
+            odkryto[i] = true;
             var element = document.getElementById("element" + i);
             element.innerHTML = ikonaBomby;
+            element.style.backgroundColor="red";
             element.classList.remove('zasloniety');
-            showNotification("NIESTETY GRACZ PRZEGRAL :(");
+
         }
     }
+    sendLost();
     unieruchomPlansze();
     document.getElementById("buzka").innerHTML = smutnaTwarz;
+
 }
 function oflaguj(i){
 
@@ -185,29 +294,36 @@ function oflaguj(i){
     }*/
 
     var element = document.getElementById(i);
-
+    var out = i.replace(/\'/g, '').split(/(\d+)/).filter(Boolean);
+    var index = out[1];
     if(element.innerHTML === ""){
         element.innerHTML = ikonaFlagi;
+        visibleBoard[index] = 10;
         flagCounter++;
     }
 
     else if(element.innerHTML === ikonaFlagi){
         element.innerHTML = ikonaZnakuZapytania;
-        flagCounter--;
+        visibleBoard[index] = 11;
+            flagCounter--;
     }
 
     else{
         element.innerHTML = "";
+        visibleBoard[index] = 9;
     }
 
     document.getElementById("licznikFlag").innerHTML = boombsCounter - flagCounter;
+    sendFlagCounter(boombsCounter - flagCounter);
     czyWygrales();
+
+    sendMove(visibleBoard);
 }
 function czyWygrales(){
     if(iloscOdkrytychPol + boombsCounter === board.length && flagCounter === boombsCounter ){
         unieruchomPlansze();
         document.getElementById("buzka").innerHTML = szczesliwaTwarz;
-        showNotification("BRAWO SAPER WYGRAL!");
+        sendWin();
     }
 
 }
@@ -252,7 +368,10 @@ function addBomb(id){
         boardBombs.push(id);
         element.innerHTML = ikonaBomby;
         $("#licznikFlag").html(boombsCounter);
-    }
+        sendFlagCounter(boombsCounter);
+
+
+        }
 
 
 }
@@ -268,6 +387,7 @@ function clearField(id){
         }
         element.innerHTML = "";
         $("#licznikFlag").html(boombsCounter);
+        sendFlagCounter(boombsCounter);
     }
 }
 
@@ -290,7 +410,6 @@ function connect(){
 
         var socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
-
         stompClient.connect({}, onConnected, onError);
     }
 }
@@ -309,7 +428,10 @@ function enterRoom(newRoomId) {
     $("#room-id-display").text(roomId);
     topic = `/app/chat/${newRoomId}`;
     gameTopic = `/app/game/${newRoomId}`;
+
+
     if (currentSubscription || gameSubscription) {
+
         currentSubscription.unsubscribe();
         gameSubscription.unsubscribe();
     }
@@ -345,6 +467,14 @@ function sendBoard() {
     }
     console.log(JSON.stringify(BoardMessage));
     stompClient.send(`${gameTopic}/sendBoard`, {}, JSON.stringify(BoardMessage));
+    $("#COMMIT").prop("disabled",true);
+}
+function sendMove(board) {
+    var BoardMessage ={
+        fields: board,
+    }
+    console.log(JSON.stringify(BoardMessage));
+    stompClient.send(`${gameTopic}/sendMove`, {}, JSON.stringify(BoardMessage));
 }
 function processText(inputText) {
     var output = [];
@@ -363,6 +493,10 @@ function processText(inputText) {
 function onGameMessageReceived(payload) {
     var gameMessage = JSON.parse(payload.body);
     console.log(gameMessage);
+    if(gameMessage.restart){
+        showNotification("RESTART!");
+        restart();
+    }
     if(gameMessage.bomber && bomber){
         showNotification(gameMessage.bomber + ": is THE BOMBER!")
         bomber = false;
@@ -375,29 +509,91 @@ function onGameMessageReceived(payload) {
         saper = false;
     }
     if(gameMessage.state == 'DEPLOYING'){
+        if(DeployingFirstTime)
         showNotification(gameMessage.bomber + ": is DEPLOYING!")
+        DeployingFirstTime=false;
         currentState = States.DEPLOYING;
         $("#COMMIT").attr("class","primary inline");
+        $("#COMMIT").prop("disabled",false);
+        $("#COMMIT").show();
         if(myRole != Roles.BOMBER)
-            $("#COMMIT").prop("disabled",true);
+            $("#COMMIT").hide();
         else
             addListeners();
-    }if(gameMessage.state == 'DEFUSING'){
+        if(gameMessage.flagCounter!=null)
+        $("#licznikFlag").text(gameMessage.flagCounter);
+    }if(gameMessage.state == 'DEFUSING' && defusing){
         showNotification(gameMessage.saper + ": is DEFUSING!")
+        if(!czasUplywa){
+            uruchomCzas();
+        }
         currentState = States.DEFUSING;
-        if(myRole == Roles.SAPER)
+        if(myRole == Roles.SAPER){
             addSaperListeners();
+            $("#RESTART").attr("class","primary inline");
+            $("#RESTART").show();
+        }
         else if(myRole == Roles.BOMBER){
+            $("#COMMIT").hide();
             clearFields();
             removeListeners();
         }
+        defusing = false;
+        //tutaj jakis przycisk restartu i jakis warunek ze jak saper oddejdzie to trzeba restartowac
         boombsCounter = gameMessage.board.fields.length;
         $("#licznikFlag").text(boombsCounter);
+        //to moze sie wykonac tylko raz
         setBoard(gameMessage.board.fields)
+    }if(  gameMessage.state == 'DEFUSING' && myRole != Roles.SAPER){
+        if(!czasUplywa){
+            uruchomCzas();
+        }
+        setBoardView(gameMessage.visibleBoard.fields);
+        $("#licznikFlag").text(gameMessage.flagCounter);
+    }if(gameMessage.state == "LOST" && iknowBro){
+        clearInterval(czasomierz);
 
+        iknowBro = false;
+        showNotification(gameMessage.saper+": LOST!");
+        document.getElementById("buzka").innerHTML = smutnaTwarz;
+
+        $("#licznikFlag").text(gameMessage.flagCounter);
+    }if(gameMessage.state == "WIN" && iknowBro){
+
+        iknowBro = false;
+        showNotification(gameMessage.saper+": WIN!");
+        $("#licznikFlag").text(gameMessage.flagCounter);
+        document.getElementById("buzka").innerHTML = szczesliwaTwarz;
+        clearInterval(czasomierz);
+    }
+    if( gameMessage.visibleBoard.fields)setBoardView(gameMessage.visibleBoard.fields);
+}
+function setBoardView(boardView){
+
+    for(let i = 0; i < boardSize * (boardSize-2); i++){
+        let element = document.getElementById("element" + i);
+        if(boardView[i] == 9){
+            element.innerHTML = "";
+        }else if(boardView[i] == 10){
+            element.innerHTML = ikonaFlagi;
+        }else if(boardView[i] == 11){
+            element.innerHTML = ikonaZnakuZapytania;
+        }else if(boardView[i] == 12){
+            element.classList.remove("kursor");
+            element.classList.remove("zasloniety");
+            element.style.backgroundColor="red";
+            element.innerHTML = ikonaBomby;
+        }else{
+            if(boardView[i]!=0){
+                var color = ["#0000FD","#017E00","#FE0001","#010180","#7F0300","#008180","#000000","#808080"];
+                element.innerHTML = '<div style="color:'+color[boardView[i]]+ '">'+boardView[i]+'</div>';
+            }
+            element.classList.remove("zasloniety");
+            element.classList.add("odkryty");
+
+        }
     }
 }
-
 function setBoard(bombsMap){
     for(let i = 0; i < boardSize * (boardSize-2); i++){
        board.push(0);
@@ -493,9 +689,14 @@ function showNotification(notification){
 function sendMessage() {
     var messageContent = $('#message').val().trim();
     if (messageContent.startsWith('/join ')) {
+
         var newRoomId = messageContent.substring('/join '.length);
-        enterRoom(newRoomId);
-        $('#messageArea').empty();
+        if(newRoomId != roomId){
+            restart();
+            clearBoard();
+            enterRoom(newRoomId);
+            $('#messageArea').empty();
+        }
 
     } else if (messageContent && stompClient) {
         var chatMessage = {
@@ -524,4 +725,5 @@ $(function () {
     $( "#BOMBER" ).click(function() { sendBOMBERRole(); });
     $("#SAPER").click(function () {  sendSAPERRole()});
     $("#COMMIT").click(function () { sendBoard()});
+    $("#RESTART").click(function () { initRestart()});
 });
