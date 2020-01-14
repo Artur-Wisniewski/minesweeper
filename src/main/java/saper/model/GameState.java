@@ -31,8 +31,6 @@ public class GameState {
         this.visibleBoard = visibleBoard;
     }
 
-
-
     public State getState() {
         return state;
     }
