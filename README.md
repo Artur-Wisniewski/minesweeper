@@ -14,6 +14,8 @@ To start application:
 Test on http://localhost:8081
 You can create two windows on your browser to test. 
 
+# Gameplay
+
 # First stage
 
 In this stage you can choose your name and room.
