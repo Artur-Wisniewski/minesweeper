@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<websocket-message-broker application-destination-prefix="/app">
+    <websocket-stomp-endpoint path="/ws"/>
+    <websocket-simple-broker prefix="/game"/>
+    <websocket-simple-broker prefix="/channel"/>
+</websocket-message-broker>
