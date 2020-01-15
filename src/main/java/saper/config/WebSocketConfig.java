@@ -11,7 +11,7 @@ import xml.XmlConfigurationParser;
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-  XmlConfigurationParser xmlConfig = new XmlConfigurationParser("C:\\Users\\Artur\\Documents\\Java\\saper\\saper-multiplayer\\src\\main\\resources\\webSocketConfiguration.xml");
+  XmlConfigurationParser xmlConfig = new XmlConfigurationParser("src/main/resources/webSocketConfiguration.xml");
 
   public WebSocketConfig() throws Exception {
 
@@ -19,13 +19,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
-    registry.addEndpoint("/ws").withSockJS();
+    registry.addEndpoint(xmlConfig.getStompEndPointPath()).withSockJS();
 
   }
 
   @Override
   public void configureMessageBroker(MessageBrokerRegistry registry) {
-    registry.setApplicationDestinationPrefixes("/app");
-    registry.enableSimpleBroker("/channel", "/game");
+    registry.setApplicationDestinationPrefixes( xmlConfig.getMessageBrokerApplicationDestinationPrefix());
+    registry.enableSimpleBroker(xmlConfig.getSimpleBrokerPrefixs().get(0), xmlConfig.getSimpleBrokerPrefixs().get(1));
   }
 }

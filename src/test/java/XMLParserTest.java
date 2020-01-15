@@ -13,7 +13,7 @@ public class XMLParserTest {
 
     @BeforeEach
     void initAll() throws Exception {
-        parser = new XmlConfigurationParser("webSocketConfiguration.xml");
+        parser = new XmlConfigurationParser("src/test/resources/webSocketConfiguration.xml");
 
     }
     @Test

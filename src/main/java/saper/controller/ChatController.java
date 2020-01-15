@@ -30,7 +30,7 @@ public class ChatController {
 
   @MessageMapping("/chat/{roomId}/addUser")
   public void addUser(@DestinationVariable String roomId, @Payload ChatMessage chatMessage,
-      SimpMessageHeaderAccessor headerAccessor) {
+                      SimpMessageHeaderAccessor headerAccessor) {
 
 
 
@@ -47,26 +47,30 @@ public class ChatController {
       //why it is here, because at start we used addUser not joinToTheGame
       String username = (String) headerAccessor.getSessionAttributes().get("username");
       if( GameController.GamesState.containsKey(currentRoomId)){
-        GameState gameState =  GameController.GamesState.get(currentRoomId);
-        RestartMessage restartMessage = new RestartMessage();
-        restartMessage.setRestart(true);
-        if(gameState.getState() == GameState.State.DEPLOYING &&
-                gameState.getBomber().equals(username) ||
-                gameState.getSaper().equals(username) ||
-                ((gameState.getState() == GameState.State.DEFUSING ||
-                        gameState.getState() == GameState.State.LOST ||
-                        gameState.getState() == GameState.State.WIN)
-                        && gameState.getSaper().equals(username)) ||
-                ( gameState.getState() == GameState.State.WAITING_FOR_PLAYERS
-                        && (gameState.getBomber().equals(username) || gameState.getSaper().equals(username)))){
-          GameController.GamesState.remove(currentRoomId);
-          messagingTemplate.convertAndSend(format("/game/%s", currentRoomId), restartMessage);
-        }
+          resetTheGameIfNeeded(username,currentRoomId);
       }
-
     }
-
     headerAccessor.getSessionAttributes().put("username", chatMessage.getSender());
     messagingTemplate.convertAndSend(format("/channel/%s", roomId), chatMessage);
+  }
+  private boolean ifPlayerHaveAnImportantRoleInCurrentState(GameState gameState, String username){
+    return (gameState.getState() == GameState.State.DEPLOYING &&
+            gameState.getBomber().equals(username) ||
+            gameState.getSaper().equals(username) ||
+            ((gameState.getState() == GameState.State.DEFUSING ||
+                    gameState.getState() == GameState.State.LOST ||
+                    gameState.getState() == GameState.State.WIN)
+                    && gameState.getSaper().equals(username)) ||
+            ( gameState.getState() == GameState.State.WAITING_FOR_PLAYERS
+                    && (gameState.getBomber().equals(username) || gameState.getSaper().equals(username))));
+  }
+  private void resetTheGameIfNeeded(String username,String currentRoomId){
+    GameState gameState =  GameController.GamesState.get(currentRoomId);
+    if(ifPlayerHaveAnImportantRoleInCurrentState(gameState,username)){
+      RestartMessage restartMessage = new RestartMessage();
+      restartMessage.setRestart(true);
+      GameController.GamesState.remove(currentRoomId);
+      messagingTemplate.convertAndSend(format("/game/%s", currentRoomId), restartMessage);
+    }
   }
 }
