@@ -1,6 +1,6 @@
 # Saper multiplayer 
 
-Simple application in java and javascript
+Simple client-server application in java and javascript
 
 Technologies:
 *  Spring boot
