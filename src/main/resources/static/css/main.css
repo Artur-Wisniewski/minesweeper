@@ -84,9 +84,7 @@ button.primary {
     color: #0000FD;
     border: solid 1px #808080;
 }
-.bomba{
-    background-color: red;
-}
+
 button.accent {
     font-size: 18px;
     min-height: 40px;
@@ -153,7 +151,7 @@ button.accent {
     text-align: center;
     float: right;
     height: 30px;
-    width: 40px;
+    width: 48px;
     background-color: #222222;
     display: table;
 }
