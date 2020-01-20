@@ -2,6 +2,7 @@ package saper.controller;
 
 import static java.lang.String.format;
 
+import com.sun.xml.internal.bind.v2.TODO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,7 @@ public class ChatController {
     messagingTemplate.convertAndSend(format("/channel/%s", roomId), chatMessage);
   }
   private boolean ifPlayerHaveAnImportantRoleInCurrentState(GameState gameState, String username){
+//    TODO CHECK CONDITION
     return (gameState.getState() == GameState.State.DEPLOYING &&
             gameState.getBomber().equals(username) ||
             gameState.getSaper().equals(username) ||
